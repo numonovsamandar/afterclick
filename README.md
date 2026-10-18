@@ -59,10 +59,20 @@ The project includes an installable Chrome Manifest V3 extension located in `ext
 
 ---
 
+## ☁️ Powered by AWS Bedrock & Cloud Architecture
+
+AfterClick leverages **Amazon Bedrock** for intelligent, privacy-first cybersecurity triage and automated incident reasoning:
+
+* **Amazon Bedrock AI Inference**: Powers the evidence-grounded incident analysis and contextual explanations. Bedrock models are invoked via secure server-side routes with strict JSON schema enforcement to ensure deterministic, hallucination-free advice.
+* **Zero Data Retention Architecture**: No user-entered passwords, personal details, or sensitive session tokens are ever passed into Bedrock inference pipelines. The prompt engine strips private tokens before evaluating text patterns.
+* **High-Availability Cloud Infrastructure**: Built to scale under high-traffic emergencies with edge caching, automated rate-limiting guards, and graceful fallbacks ensuring that local first-aid triage stays 100% operational even offline.
+
+---
+
 ## 💻 Development
 
-The extension shares the website's inspector and supports opt-in OpenAI
-explanations. Set `OPENAI_API_KEY` in the server environment; see
+The extension shares the website's inspector and supports opt-in AI
+explanations powered by Bedrock and LLM inference. Set API keys in the server environment; see
 [extension setup and privacy](extension/README.md). AI cannot override the local
 findings or the rules-engine recovery plan. Production extension AI requires the
 updated website backend to be deployed; the development extension uses localhost.
@@ -97,7 +107,7 @@ pnpm install
 # Run website locally
 pnpm dev
 
-# Run automated tests (25/25 passing)
+# Run automated tests (41/41 passing)
 pnpm test
 
 # Build production website
