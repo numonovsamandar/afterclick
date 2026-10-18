@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AfterClick Demo — Suspicious Account Alert Simulation</title>
+  <style>
+    :root {
+      --bg: #FBF8F3;
+      --card: #F5F0E8;
+      --border: #E2DACB;
+      --text: #1A1A1A;
+      --muted: #6B6B6B;
+      --red: #EF4444;
+      --accent: #D97706;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 640px;
+      width: 100%;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+    .demo-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: #FEF3C7;
+      color: #92400E;
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+    h1 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .instructions {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .instructions ol {
+      margin-left: 20px;
+      margin-top: 8px;
+    }
+    .instructions li {
+      margin-bottom: 4px;
+    }
+    .email-container {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .email-meta {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+    .email-body {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text);
+    }
+    .email-body p {
+      margin-bottom: 12px;
+    }
+    .urgent-banner {
+      background: #FEE2E2;
+      border-left: 4px solid var(--red);
+      padding: 10px 14px;
+      border-radius: 0 4px 4px 0;
+      font-weight: 600;
+      color: #991B1B;
+      font-size: 13px;
+      margin-bottom: 14px;
+    }
+    .phish-link {
+      display: inline-block;
+      background: #1A1A1A;
+      color: #FFFFFF !important;
+      text-decoration: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 13px;
+      margin: 8px 0 16px 0;
+      pointer-events: none; /* Prevents navigation while preserving inspection */
+      cursor: default;
+    }
+    .link-caption {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+      word-break: break-all;
+    }
+    .footer-note {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="demo-badge">Hackathon Demonstration Environment</div>
+    <h1>Simulated Phishing Scenario</h1>
+    <div class="instructions">
+      <p>This is a safe demonstration page for judging the <strong>AfterClick Companion</strong> Chrome extension without visiting malicious sites.</p>
+      <ol>
+        <li>Click the <strong>AfterClick</strong> extension icon in the toolbar.</li>
+        <li>Click <strong>Inspect this page</strong> or <strong>Inspect visible page text and links</strong>.</li>
+        <li>Or highlight any phrase below, right-click, and select <strong>"Analyze with AfterClick"</strong>.</li>
+        <li>Click <strong>"I already interacted"</strong> to test emergency response handoff.</li>
+      </ol>
+    </div>
+
+    <div class="email-container">
+      <div class="email-meta">
+        <div><strong>From:</strong> PayPal Security Team &lt;service@paypal-account-notice.example.com&gt;</div>
+        <div><strong>To:</strong> victim@example.org</div>
+        <div><strong>Subject:</strong> [URGENT] Immediate action required: Account suspended within 24 hours</div>
+      </div>
+
+      <div class="urgent-banner">
+        FINAL NOTICE: Unauthorized access detected. Your account will be permanently closed today.
+      </div>
+
+      <div class="email-body">
+        <p>Dear Customer,</p>
+        <p>We recently detected suspicious and unusual sign-in activity on your PayPal account from an unrecognized IP address. To prevent permanent termination and legal action, you must immediately confirm your identity and verify your account password.</p>
+        <p>If you do not act right away, an unpaid processing fee of $49.99 will be charged to your debit card on file.</p>
+        
+        <p>Click below to verify your password and enter your 6-digit verification code:</p>
+
+        <!-- Simulated link: displayed destination points to a lookalike subdomain chain -->
+        <div>
+          <span class="phish-link">Verify Account & Password Immediately</span>
+        </div>
+        <p class="link-caption">
+          Target URL: https://paypal.com.secure-login.account-verify.top/signin
+        </p>
+        <p style="margin-top: 12px; font-size: 12px; color: var(--muted);">
+          Note: This demonstration link is inert and cannot navigate anywhere.
+        </p>
+
+        <p style="margin-top: 16px;">
+          Sincerely,<br />
+          PayPal Account Protection Team
+        </p>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      AfterClick Companion inspects addresses locally and never transmits your data.
+    </div>
+  </div>
+
+</body>
+</html>
