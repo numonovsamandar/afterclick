@@ -1,9 +1,21 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
+import { readFileSync } from 'node:fs';
 
-export default defineConfig({
-  plugins: [react()],
+export default defineConfig(({ mode }) => {
+const apiOrigin = mode === 'development' ? 'http://localhost:8080' : 'https://afterclick-nine.vercel.app';
+return {
+  define: { __AFTERCLICK_API_ORIGIN__: JSON.stringify(apiOrigin) },
+  plugins: [react(), {
+    name: 'afterclick-api-permission',
+    generateBundle() {
+      this.emitFile({ type: 'asset', fileName: 'manifest.json', source: JSON.stringify({
+        ...JSON.parse(readFileSync(resolve(__dirname, 'manifest.json'), 'utf8')),
+        host_permissions: [`${apiOrigin}/*`],
+      }, null, 2) });
+    },
+  }],
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
@@ -33,4 +45,5 @@ export default defineConfig({
     minify: true,
     sourcemap: false,
   },
+};
 });

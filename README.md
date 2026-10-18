@@ -61,6 +61,35 @@ The project includes an installable Chrome Manifest V3 extension located in `ext
 
 ## 💻 Development
 
+The extension shares the website's inspector and supports opt-in OpenAI
+explanations. Set `OPENAI_API_KEY` in the server environment; see
+[extension setup and privacy](extension/README.md). AI cannot override the local
+findings or the rules-engine recovery plan. Production extension AI requires the
+updated website backend to be deployed; the development extension uses localhost.
+
+### ElevenLabs voice guide
+
+The incident workflow includes **Talk me through it** for first aid, questions,
+and individual recovery steps. Listen, pause, resume, and replay are available;
+changing steps or closing the dialog stops playback. This is read-aloud guidance,
+not microphone input or an open-ended conversational agent.
+
+Copy `.env.example` to `.env.local` and set `ELEVENLABS_API_KEY` and
+`ELEVENLABS_VOICE_ID` from your ElevenLabs account. Set the same server environment
+variables in your hosting dashboard and redeploy to enable production voice.
+Never use `VITE_` variables for the key. The voice must be accessible to your account.
+
+The server rebuilds narration from the rules engine; it accepts only incident,
+answer, provider, and step selectors, never arbitrary speech text. Only the generated
+guidance is sent to ElevenLabs, not pasted messages or case reports. Speech uses
+`eleven_multilingual_v2` through the [text-to-speech API](https://elevenlabs.io/docs/api-reference/text-to-speech/convert),
+which consumes ElevenLabs TTS credits (agent-minute allowances are a separate product).
+Repeated clips are cached in server memory and each server instance allows up to
+20 new generations per minute. This is not a distributed spending limit: configure
+an API-key credit limit in ElevenLabs before a public launch. Cache and limits reset
+on restart and are independent across serverless instances. Missing credentials or
+provider failures leave all written guidance usable.
+
 ```sh
 # Install dependencies
 pnpm install

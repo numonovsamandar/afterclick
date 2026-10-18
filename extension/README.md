@@ -8,6 +8,36 @@ A companion Chrome Manifest V3 extension for **AfterClick**, the cybersecurity f
 
 ## 🛡️ Core Capabilities
 
+### Optional OpenAI explanations
+
+After a local URL, visible-page, or selected-text scan, select **Review AI scan**.
+Review the exact redacted preview and select **Send to OpenAI**. The extension sends
+the reviewed sample to AfterClick's backend; the backend rebuilds deterministic
+findings and sends only those findings and their evidence to OpenAI. AI explanations
+cite those findings and cannot replace the local warning level or recovery plan.
+No remote page is visited. Missing credits, timeouts, or server errors leave local
+inspection usable. Redaction is best-effort, which is why the preview requires review.
+
+The extension and website now share `src/lib/inspector.ts`, including private-suffix
+handling for shared hosting, security-reminder filtering, and lower severity for
+payment/code mentions without a request. Link inspection retains different labels
+for the same destination so a benign first link cannot hide a later mismatch.
+
+Server setup: set `OPENAI_API_KEY` and optionally `OPENAI_MODEL` (default
+`gpt-5-mini`) in the website's server environment. The endpoint is
+`/api/extension/explain`. API keys are never compiled into the extension.
+The production build connects to `https://afterclick-nine.vercel.app` and needs
+the updated backend deployed there. `npm run build:dev` connects to
+`http://localhost:8080`; run the root app with `pnpm dev --port 8080`.
+Both builds request host permission only for their configured AfterClick server.
+Reload an existing extension from `chrome://extensions` after updating its files.
+
+The backend accepts Chrome extension origins and applies a per-instance limit of
+12 explanation requests per minute. CORS is not authentication, and the limit is
+not shared across replicas. Set provider credit limits and add deployment-level
+rate limiting before offering the endpoint publicly. Responses are not cached;
+OpenAI requests use `store: false` (this does not promise zero provider retention).
+
 1. **One-Click Page Address Inspector**
    - Deterministic domain analysis powered by `tldts`.
    - Distinguishes the full hostname from the true registered domain (eTLD+1).
@@ -177,7 +207,7 @@ Tested criteria:
 
 ## 🔒 Security & Privacy Commitments
 
-- **No Remote Telemetry**: All inspection rules run locally in your browser memory.
+- **Local by Default**: Inspection rules run locally. Optional, reviewed AI requests send the sample to AfterClick and the resulting evidence to OpenAI.
 - **Never Visits Malicious Sites**: Address inspection parses string structures using `tldts` and never initiates HTTP GET requests to suspicious targets.
 - **Strictly Scoped Permissions**: Uses minimal permissions (`activeTab`, `scripting`, `contextMenus`, `storage`). Never runs background persistent web traffic monitoring.
 - **No False Comfort**: Clean text explicitly states that an absence of known red flags does not guarantee safety.

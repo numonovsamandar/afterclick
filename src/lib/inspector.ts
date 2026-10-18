@@ -117,7 +117,7 @@ export function analyzeDomain(raw: string, pos = { start: 0, end: raw.length }):
   if (!/^[a-z]+:\/\//i.test(href)) href = "http://" + href;
   let url: URL | null = null;
   try { url = new URL(href); } catch { /* unparsable */ }
-  const p = parse(href);
+  const p = parse(href, { allowPrivateDomains: true });
   const hostname = url?.hostname ?? p.hostname ?? null;
   const protocol = /^[a-z]+:\/\//i.test(raw) ? (url?.protocol.replace(":", "") ?? null) : null;
   const domain = p.domain ?? null;
@@ -168,7 +168,7 @@ const RULES: Rule[] = [
     re: /\b(suspend(ed|ion)?|locked|disabled|terminat(e|ed|ion)|clos(e|ed|ure) your account|legal action|arrest|penalt(y|ies)|unusual (sign-?in|activity)|unauthori[sz]ed (access|activity|login))\b/gi },
   { id: "credentials", kind: "credentials", severity: "high", title: "Asks you to sign in or confirm your password",
     explanation: "Real companies don't ask you to confirm passwords through a link in a message.",
-    re: /\b(verify your (account|identity|information|details)|confirm your (password|account|identity|details)|(log|sign)[\s-]?in (here|now|below|to (verify|confirm|restore))|update your (password|account|login)|re-?enter your password|password)\b/gi },
+    re: /\b(verify your (account|identity|information|details)|confirm your (password|account|identity|details)|(log|sign)[\s-]?in (here|now|below|to (verify|confirm|restore))|update your (password|account|login)|(?:re-?enter|enter|share|send|verify) your password)\b/gi },
   { id: "code", kind: "code", severity: "high", title: "Asks for a verification code",
     explanation: "One-time codes let someone sign in as you. No real support agent needs yours.",
     re: /\b(verification code|security code|one[-\s]?time (code|password|passcode)|otp|6[-\s]?digit code|send (me|us) the code|code (we|that was) sent)\b/gi },
@@ -203,8 +203,22 @@ export function analyzeMessage(input: string): Analysis {
   const urls = extractURLs(text).map((u) => analyzeDomain(u.raw, u));
 
   for (const r of RULES) {
-    const ev = findAll(text, r.re);
-    if (ev.length) findings.push({ id: r.id, kind: r.kind, severity: r.severity, title: r.title, explanation: r.explanation, evidence: ev });
+    const ev = findAll(text, r.re).filter((e) => {
+      // A security reminder is not a request to disclose a secret. Scope the
+      // negation to the same clause; a later request must still be detected.
+      if (!["credentials", "code", "sensitive", "payment", "remote"].includes(r.id)) return true;
+      const before = text.slice(Math.max(0, e.start - 100), e.start).split(/[.!?;\n]/).pop() ?? "";
+      return !/\b(?:never|do not|don['’]t)\s+(?:\w+\s+){0,5}(?:share|send|give|disclose|enter|pay|install|allow)\b[^,]{0,45}$/i.test(before)
+        && !/\b(?:never|do not|don['’]t)\s*$/i.test(before);
+    });
+    if (ev.length) {
+      // Mentions alone (receipts, help articles, settings labels) are not requests.
+      const isRequest = /\b(?:send|share|give|enter|provide|confirm|verify|pay|buy|purchase|transfer|install|download|allow|grant|call)\b/i.test(text);
+      const mentionOnly = ["code", "payment", "sensitive", "remote"].includes(r.id) && !isRequest;
+      findings.push({ id: r.id, kind: r.kind, severity: mentionOnly ? "low" : r.severity,
+        title: mentionOnly ? `Mentions ${r.id === "code" ? "verification codes" : r.id === "payment" ? "payments" : r.id === "remote" ? "remote access" : "sensitive information"}` : r.title,
+        explanation: mentionOnly ? "A mention alone does not establish a request or a scam. The surrounding context needs independent verification." : r.explanation, evidence: ev });
+    }
   }
 
   // Brands claimed in the text (ignoring mentions that are inside URLs).

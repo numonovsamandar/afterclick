@@ -21,7 +21,7 @@ function extractVisibleText(): string {
     {
       acceptNode(node) {
         const el = node.parentElement;
-        if (!el) return NodeFilter.FILTER_REJECT;
+        if (!el || el.closest('input,textarea,select,script,style,noscript,template,[contenteditable]:not([contenteditable="false"]),[hidden],[aria-hidden="true"]') || !el.getClientRects().length) return NodeFilter.FILTER_REJECT;
         
         // Skip hidden elements
         const style = window.getComputedStyle(el);
@@ -62,12 +62,14 @@ function extractLinks(): { text: string; href: string }[] {
   for (const anchor of anchors) {
     if (links.length >= MAX_LINKS) break;
     const a = anchor as HTMLAnchorElement;
+    if (!a.getClientRects().length || a.closest('[hidden],[aria-hidden="true"],[contenteditable]:not([contenteditable="false"])') || getComputedStyle(a).visibility === 'hidden') continue;
     const href = a.href;
     
     // Skip empty, javascript:, and mailto: links
     if (!href || href.startsWith('javascript:') || href.startsWith('mailto:') || href === '#') continue;
-    if (seen.has(href)) continue;
-    seen.add(href);
+    const identity = `${href}\n${a.textContent ?? ''}`;
+    if (seen.has(identity)) continue;
+    seen.add(identity);
     
     const text = (a.textContent ?? '').trim().slice(0, 200);
     links.push({ text, href });

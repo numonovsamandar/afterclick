@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { analyzeMessage, highlightSegments, type Analysis, type Finding } from '@/lib/inspector';
 import { getIncidentUrl, WEBSITE_URL } from '@/lib/constants';
+import { AiExplanation } from '@/components/AiExplanation';
 
 export function InspectPage() {
   const [text, setText] = useState<string>('');
@@ -35,11 +36,7 @@ export function InspectPage() {
 
   const handleManualAnalyze = (newText: string) => {
     setText(newText);
-    if (newText.trim()) {
-      setAnalysis(analyzeMessage(newText));
-    } else {
-      setAnalysis(null);
-    }
+    setAnalysis(null);
   };
 
   const copyFindings = useCallback(() => {
@@ -82,7 +79,7 @@ export function InspectPage() {
       lines.push('');
     }
 
-    lines.push('---', 'Analyzed locally by AfterClick. No data transmitted. Findings are informational and do not guarantee safety.');
+    lines.push('---', 'These findings come from local rules. Optional AI explanations are separate. Findings are informational and do not guarantee safety.');
     navigator.clipboard.writeText(lines.join('\n'));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -160,6 +157,7 @@ export function InspectPage() {
                   Analyzed Text
                 </span>
                 <div className="flex items-center gap-2">
+                  {analysis && <button className="text-xs text-muted-foreground hover:text-foreground" onClick={() => setAnalysis(null)}>Edit text</button>}
                   <button
                     onClick={clearSelection}
                     className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
@@ -188,13 +186,17 @@ export function InspectPage() {
                   })}
                 </div>
               ) : (
+                <>
                 <textarea
+                  aria-label="Message to inspect"
                   value={text}
                   onChange={(e) => handleManualAnalyze(e.target.value)}
                   placeholder="Highlight text on any page and right-click 'Analyze with AfterClick', or paste text here to inspect..."
                   rows={4}
                   className="w-full p-3 rounded-lg bg-background border border-foreground/10 font-mono text-sm leading-relaxed focus:outline-none focus:border-foreground/40"
                 />
+                <button disabled={!text.trim()} onClick={() => setAnalysis(analyzeMessage(text))} className="rounded-lg bg-primary text-primary-foreground px-3 py-2 text-xs font-semibold disabled:opacity-40">Inspect message</button>
+                </>
               )}
             </div>
 
@@ -230,6 +232,7 @@ export function InspectPage() {
                   </div>
                 </div>
 
+                <AiExplanation input={{ text, url: sourceUrl, links: [] }} />
                 {/* Warning Signs Grid */}
                 {analysis.findings.length > 0 && (
                   <div className="space-y-3">

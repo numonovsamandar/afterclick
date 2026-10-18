@@ -9,6 +9,7 @@ import {
 import { analyzeDomain, analyzeMessage, type Analysis, type DomainAnalysis } from '@/lib/inspector';
 import { analyzePageContent, type PageContentAnalysis } from '@/lib/page-content-inspector';
 import { getIncidentUrl, isRestrictedUrl, WEBSITE_URL, INCIDENT_ROUTES } from '@/lib/constants';
+import { AiExplanation } from '@/components/AiExplanation';
 
 type View = 'home' | 'url-results' | 'page-results' | 'emergency';
 
@@ -169,13 +170,17 @@ export function Popup() {
             openWebsite={openWebsite}
           />
         )}
+        {(view === 'url-results' || view === 'page-results') && <div className="px-4 pb-4"><AiExplanation input={{
+          url: tabInfo?.url ?? '', text: view === 'page-results' ? pageAnalysis?.textAnalysis.input ?? '' : '',
+          links: view === 'page-results' ? pageAnalysis?.links.map((l) => ({ text: l.text, href: l.href })) ?? [] : [],
+        }} /></div>}
       </div>
 
       {/* Footer */}
       <footer className="px-4 py-2 border-t border-foreground/10 bg-paper/50">
         <p className="text-[10px] text-muted-foreground text-center leading-relaxed">
           AfterClick inspects addresses locally and never visits suspicious links.
-          No data is sent externally.
+          Optional AI explanations send reviewed scan data to AfterClick and evidence to OpenAI.
         </p>
       </footer>
     </div>

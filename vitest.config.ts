@@ -11,6 +11,8 @@ export default defineConfig({
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
   },
   resolve: {
+    // Extension UI tests share this renderer instead of loading a second React.
+    dedupe: ["react", "react-dom"],
     alias: { "@": path.resolve(__dirname, "./src") },
   },
 });

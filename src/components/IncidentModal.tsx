@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { clearPlan, loadPlan, savePlan } from "@/lib/saved-plans";
 import type { CaseContext } from "@/components/ScanModal";
 import { CaseFile } from "@/components/CaseFile";
+import { VoiceGuide } from "@/components/VoiceGuide";
 
 type Phase = "choose" | "aid" | "questions" | "step" | "full";
 
@@ -153,6 +154,9 @@ export function IncidentModal({ open, onOpenChange, incident: initial, initialFa
 
           {/* Body */}
           <div className="flex-1 overflow-y-auto px-5 py-6 md:px-7">
+            {open && incident && (phase === "aid" || phase === "questions" || phase === "step") && (
+              <div className="mx-auto max-w-xl"><VoiceGuide request={{ incident, facts, ...(provider ? { provider } : {}), section: phase, index: phase === "questions" ? qIndex : phase === "step" ? stepIndex : 0 }} /></div>
+            )}
             {phase === "choose" && <Chooser onPick={choose} />}
 
             {phase === "aid" && meta && (
